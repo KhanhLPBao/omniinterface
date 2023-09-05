@@ -83,7 +83,10 @@ class maingui(Tk.Tk):
                 self.prog_idx = json.load(_prog_idx)
                 _prog_idx.close()
             for prog in self.prog_idx["Program"]:
-                self.section_program.add_command(label = prog,font = fontmenu)
+                self.section_program.add_command(
+                    label = prog,
+                    font = fontmenu,
+                    command = lambda prog: self.initprogram(prog))
                 self.section_program.entryconfig(prog, state = 'disabled')
         except FileNotFoundError:
             showerror('NO SERVERDIR DETECTED','FOUND NO TRACE OF SERVER DIRECTORY')
@@ -292,8 +295,22 @@ class maingui(Tk.Tk):
             columnspan = 2,
             padx = 100
             )
-    
-       
+
+    def initprogram(self,codename):
+        import importlib.util as iu
+        spec = iu.spec_from_file_location(
+            'mod',
+            f'{pathtoscript}/Program/{codename}'
+        )
+
+        self.main = iu.module_from_spec(spec)
+        spec.loader.exec_module(self.main)
+
+        for _widget in self.mainframe:
+            _widget.destroy()
+
+        self.main(self.mainframe)
+
 if __name__ == '__main__':
     if os.path.isfile(f'{pathtoscript}/configure.json') == False:
         while True:
