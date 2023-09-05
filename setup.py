@@ -14,7 +14,7 @@ setup(
     ],
     options = {
         'py2exe':{
-            'packages':['tkinter','os','time','sys','json'],
+            'packages':['tkinter','os','time','sys','json','inspect'],
             'bundle_files':1,
             'compressed': False
         }
@@ -22,8 +22,7 @@ setup(
     zipfile = None,
     console = [
         {
-            'script':f'{pathtoscript}/main.py',
-            'dest_base' : 'TDG_Omni_Interface'
+            'script':f'{pathtoscript}/TDGOmniInterface.py',
             }
             ]
 )
