@@ -2,11 +2,11 @@ import os
 import sys
 pathtoscript = os.path.dirname(__file__)
 sys.path.append(f'{pathtoscript}/dependencies/')
-import dependencies.tkinter as Tk
-from dependencies.tkinter import ttk
-from dependencies.tkinter import Menu
-from dependencies.tkinter import filedialog
-from dependencies.tkinter.messagebox import showerror, showinfo
+import tkinter as Tk
+from tkinter import ttk
+from tkinter import Menu
+from tkinter import filedialog
+from tkinter.messagebox import showerror, showinfo
 import json
 
 
