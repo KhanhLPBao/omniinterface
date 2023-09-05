@@ -9,7 +9,7 @@ setup(
     name = 'TDG Omni Interface',
     windows = [
         {
-            'script':f'{pathtoscript}/main.py'
+            'script':f'{pathtoscript}/TDGOmniInterface.py'
         }
     ],
     options = {
