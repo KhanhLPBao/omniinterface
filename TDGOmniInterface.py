@@ -9,7 +9,7 @@ import json
 import inspect
 
 pathtoscript = inspect.getfile(lambda: None)
-pathtoscript = pathtoscript.replace('\\TDGOmniInterface.py','')
+pathtoscript = pathtoscript.replace('TDGOmniInterface.py','')
 
 class maingui(Tk.Tk):
     def __init__(self):
