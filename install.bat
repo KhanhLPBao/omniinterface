@@ -1,8 +1,7 @@
 echo off
 python setup.py py2exe
-rmdir /s /p /q dependencies
-rmdir /s /p /q build
-del main.py
+rmdir /s /q dependencies build
+del TDGOmniinterface.py
 del setup.py
 move dist\* .
-rmdir /s /p /q dist
+rmdir /s /q dist
