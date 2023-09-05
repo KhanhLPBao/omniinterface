@@ -23,7 +23,7 @@ setup(
     console = [
         {
             'script':f'{pathtoscript}/main.py',
-            'dest_base' : 'TDG Omni Interface'
+            'dest_base' : 'TDG_Omni_Interface'
             }
             ]
 )

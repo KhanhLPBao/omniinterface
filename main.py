@@ -1,6 +1,5 @@
 import os
 import sys
-
 import tkinter as Tk
 from tkinter import ttk
 from tkinter import Menu
@@ -8,10 +7,10 @@ from tkinter import filedialog
 from tkinter.messagebox import showerror, showinfo
 import json
 
-
+pathtoscript = os.path.dirname(__file__)
 class maingui(Tk.Tk):
     def __init__(self):
-        self.masterconfig = json.load(open('configure.json'))
+        self.masterconfig = json.load(open(f'{pathtoscript}/configure.json'))
         ### Folder cua may chu ###
         self.serverdir = self.masterconfig['serverdir']
         ##########################
@@ -280,9 +279,18 @@ class maingui(Tk.Tk):
             padx = 100
             )
        
+if __name__ == '__main__':
+    if os.path.isfile(f'{pathtoscript}/configure.json') == False:
+        while True:
+            serverd = filedialog.askdirectory(title="Chọn đường đẫn đến thư mục của server")
+            if serverd == "":
+                showerror("NO SERVER INTERFACE FOUND", "PROGRAM CANNOT RUN ALONE!!!")
+            else:
+                break
+        with open(f'{pathtoscript}/configure.json','w') as confg:
+            json.dump({"serverdir":f"{serverd}"},confg)
+            confg.close()
 
         
-
-if __name__ == '__main__':
     run = maingui()
     run.mainloop()
