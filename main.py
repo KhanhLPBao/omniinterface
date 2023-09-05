@@ -11,8 +11,9 @@ import json
 
 class maingui(Tk.Tk):
     def __init__(self):
+        self.masterconfig = json.load(open('configure.json'))
         ### Folder cua may chu ###
-        self.serverdir = 'servertest'
+        self.serverdir = self.masterconfig['serverdir']
         ##########################
         Tk.Tk.__init__(self)
         screen_width = self.winfo_screenwidth()
@@ -62,14 +63,17 @@ class maingui(Tk.Tk):
             tearoff = 0
         )
         self.mainmenu.add_cascade(label="Program",
-                                  menu=self.section_program)            
-        with open(f'{self.serverdir}/programindex.idx') as _prog_idx:
-            prog_idx = json.load(_prog_idx)
-            _prog_idx.close()
-        for prog in prog_idx:
-            self.section_program.add_command(label = prog)
-            self.section_program.entryconfig(prog, state = 'disabled')
-
+                                  menu=self.section_program)
+        try:            
+            with open(f'{self.serverdir}/programindex.json') as _prog_idx:
+                self.prog_idx = json.load(_prog_idx)
+                _prog_idx.close()
+            for prog in self.prog_idx["Program"]:
+                self.section_program.add_command(label = prog)
+                self.section_program.entryconfig(prog, state = 'disabled')
+        except FileNotFoundError:
+            showerror('NO SERVERDIR DETECTED','FOUND NO TRACE OF SERVER DIRECTORY')
+            exit(1)
         self._panel = {'File':self.section_file,'Program': self.section_program}
 
         self.login()
@@ -132,7 +136,8 @@ class maingui(Tk.Tk):
         self.acc_name = self.acc.get()
         acc_pwd = ''.join(format(i, '08b') for i in bytearray(self.pwd.get(), encoding ='utf-8'))
         try:
-            with open(f'{self.serverdir}/account/{hex(int(self.acc_name,36))}') as acc_info:
+            print(self.acc_name.encode("utf-8").hex())
+            with open(f'{self.serverdir}/account/{self.acc_name.encode("utf-8").hex()}') as acc_info:
                 compare = bin(acc_pwd == json.load(acc_info)['pwd'])
                 acc_info.close()
         except:
@@ -159,13 +164,19 @@ class maingui(Tk.Tk):
             exit(1)
 
     def accpermopen(self,account):
-        with open(f'{self.serverdir}/account/{hex(int(account,36))}') as acc_info:
+        with open(f'{self.serverdir}/account/{account.encode("utf-8").hex()}') as acc_info:
             acc_perm = json.load(acc_info)['perm']
             acc_info.close()
-        for _opt in acc_perm:
-            for opt, permallowed in acc_perm[_opt]:
-                if int(permallowed) == 1:
-                    self._panel[_opt].entryconfig(opt,state='active')
+            all_opt = [_o for _o in acc_perm]
+            if all_opt[0] == 'All':
+                _alltask = [(bat,t) for bat in self.prog_idx if bat != "File" for t in self.prog_idx[bat]  ]
+                for _task,_opt in _alltask:
+                    self._panel[_task].entryconfig(_opt,state='active')
+            else:
+                _alltask = [o for x in all_opt for o in acc_perm[x]]
+                for _opt in _alltask:
+                    if int(permallowed) == 1:
+                        self._panel[_opt].entryconfig(opt,state='active')
     
     def signup(self):
         def check():
@@ -174,14 +185,14 @@ class maingui(Tk.Tk):
             pwd1 = pwd.get()
             pwd2 = pwd_entry.get()
 
-            if os.path.isfile(f'{self.serverdir}/account/{hex(int(ipacc,36))}'):
+            if os.path.isfile(f'{self.serverdir}/account/{ipacc.encode("utf-8").hex()}'):
                 showerror('ACCOUNT EXISTS', 'ACCOUNT ALREADY EXISTS ON SERVER\' DATABASE')
             else:
                 if hash(pwd1) == hash(pwd2):
                     account = {}
                     account['perm'] = []
                     account['pwd'] = ''.join(format(i, '08b') for i in bytearray(pwd1, encoding ='utf-8'))
-                    with open(f'{self.serverdir}/account/{hex(int(ipacc,36))}','w') as newacc:
+                    with open(f'{self.serverdir}/account/{ipacc.encode("utf-8").hex()}','w') as newacc:
                         json.dump(account,newacc)
                         newacc.close()
                     showinfo('REGISTRATION SUCCESS','ACCOUNT HAVE BEEN REGISTRATED\nContact moderators and administrators for perm setup')
