@@ -86,7 +86,7 @@ class maingui(Tk.Tk):
                 self.section_program.add_command(
                     label = prog,
                     font = fontmenu,
-                    command = lambda prog: self.initprogram(prog))
+                    command = lambda: self.initprogram(prog))
                 self.section_program.entryconfig(prog, state = 'disabled')
         except FileNotFoundError:
             showerror('NO SERVERDIR DETECTED','FOUND NO TRACE OF SERVER DIRECTORY')
@@ -300,16 +300,16 @@ class maingui(Tk.Tk):
         import importlib.util as iu
         spec = iu.spec_from_file_location(
             'mod',
-            f'{pathtoscript}/Program/{codename}'
+            f'{pathtoscript}/Program/{codename}.py'
         )
 
         self.main = iu.module_from_spec(spec)
         spec.loader.exec_module(self.main)
 
-        for _widget in self.mainframe:
+        for _widget in self.mainframe.winfo_children():
             _widget.destroy()
 
-        self.main(self.mainframe)
+        self.main.main(self.mainframe,self.serverdir)
 
 if __name__ == '__main__':
     if os.path.isfile(f'{pathtoscript}/configure.json') == False:
