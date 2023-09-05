@@ -1,7 +1,6 @@
 import os
 import sys
-pathtoscript = os.path.dirname(__file__)
-sys.path.append(f'{pathtoscript}/dependencies/')
+
 import tkinter as Tk
 from tkinter import ttk
 from tkinter import Menu
