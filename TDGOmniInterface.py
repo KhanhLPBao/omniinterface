@@ -277,7 +277,6 @@ class maingui(Tk.Tk):
             row = 4,
             columnspan = 2,
             padx = 100
-<<<<<<< HEAD:main.py
             )
        
 if __name__ == '__main__':
@@ -295,6 +294,3 @@ if __name__ == '__main__':
         
     run = maingui()
     run.mainloop()
-=======
-            )
->>>>>>> f26dc6952aff21825ab515fa778cbcae71413677:TDGOmniInterface.py
