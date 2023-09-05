@@ -6,10 +6,14 @@ from tkinter import Menu
 from tkinter import filedialog
 from tkinter.messagebox import showerror, showinfo
 import json
+import inspect
 
-pathtoscript = os.path.dirname(__file__)
+pathtoscript = inspect.getfile(lambda: None)
+pathtoscript = pathtoscript.replace('\\TDGOmniInterface.py','')
+
 class maingui(Tk.Tk):
     def __init__(self):
+        fontmenu = ("Times News Romans",13)
         self.masterconfig = json.load(open(f'{pathtoscript}/configure.json'))
         ### Folder cua may chu ###
         self.serverdir = self.masterconfig['serverdir']
@@ -25,7 +29,11 @@ class maingui(Tk.Tk):
                                highlightthickness=2,
                                highlightbackground='black')
         
-        Tk.Label(_titleframe,text = 'TDG OMNI INTERFACE', font = ('Times News Romans',35)).pack()
+        Tk.Label(
+            _titleframe,
+            text = 'TDG OMNI INTERFACE',
+            font = ('Times News Romans',35)
+            ).pack()
         _titleframe.pack(fill='both')
 
         self.mainframe = Tk.Frame(self,
@@ -49,32 +57,38 @@ class maingui(Tk.Tk):
             tearoff = 0
         )
         self.mainmenu.add_cascade(label="File",
-                                  menu=self.section_file) 
+                                  menu=self.section_file,
+                                  font = fontmenu) 
         self.section_file.add_command(label = 'Sign up',
+                                      font = fontmenu,
                                       command = self.signup)
-        self.section_file.add_command(label = 'Logout')
+        self.section_file.add_command(label = 'Logout',
+                                      font = fontmenu,)
         self.section_file.add_command(label = 'Quit',
+                                      font = fontmenu,
                                       command = self.quit)    
-        self.section_file.entryconfig("Logout", state="disabled")
+        self.section_file.entryconfig("Logout",
+                                      font = fontmenu,
+                                      state="disabled")
 
         self.section_program = Menu(
             self.mainmenu,
             tearoff = 0
         )
         self.mainmenu.add_cascade(label="Program",
-                                  menu=self.section_program)
+                                  menu=self.section_program,
+                                  font = fontmenu)
         try:            
             with open(f'{self.serverdir}/programindex.json') as _prog_idx:
                 self.prog_idx = json.load(_prog_idx)
                 _prog_idx.close()
             for prog in self.prog_idx["Program"]:
-                self.section_program.add_command(label = prog)
+                self.section_program.add_command(label = prog,font = fontmenu)
                 self.section_program.entryconfig(prog, state = 'disabled')
         except FileNotFoundError:
             showerror('NO SERVERDIR DETECTED','FOUND NO TRACE OF SERVER DIRECTORY')
             exit(1)
         self._panel = {'File':self.section_file,'Program': self.section_program}
-
         self.login()
         
     def login(self):
@@ -168,14 +182,14 @@ class maingui(Tk.Tk):
             acc_info.close()
             all_opt = [_o for _o in acc_perm]
             if all_opt[0] == 'All':
-                _alltask = [(bat,t) for bat in self.prog_idx if bat != "File" for t in self.prog_idx[bat]  ]
+                _alltask = [(bat,t) for bat in self.prog_idx if bat != "File" for t in self.prog_idx[bat]]
                 for _task,_opt in _alltask:
                     self._panel[_task].entryconfig(_opt,state='active')
             else:
                 _alltask = [o for x in all_opt for o in acc_perm[x]]
-                for _opt in _alltask:
+                for _opt,permallowed in _alltask:
                     if int(permallowed) == 1:
-                        self._panel[_opt].entryconfig(opt,state='active')
+                        self._panel[_opt].entryconfig(_opt,state='active')
     
     def signup(self):
         def check():
@@ -278,6 +292,7 @@ class maingui(Tk.Tk):
             columnspan = 2,
             padx = 100
             )
+    
        
 if __name__ == '__main__':
     if os.path.isfile(f'{pathtoscript}/configure.json') == False:
