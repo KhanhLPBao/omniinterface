@@ -269,10 +269,3 @@ class maingui(Tk.Tk):
             columnspan = 2,
             padx = 100
             )
-       
-
-        
-
-if __name__ == '__main__':
-    run = maingui()
-    run.mainloop()
