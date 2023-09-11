@@ -1,5 +1,5 @@
 from tkinter import Label, Frame, Entry, Button, Toplevel
-from tkinter.filedialog import askopenfile
+from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showerror, showinfo
 import shutil
 import string
@@ -11,13 +11,12 @@ class main:
     def __init__(self,master,serverlink):
         self._workingcase = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(8))
         self.workingcase = {}
-        with open(f'{serverlink}/listwork/_{self.workingcase}','w') as _work:
-            _work.close()
+
         #####
         self.master = master
         self.serverlink = serverlink
         #####
-        self.workingframe = Frame(self.master, height = 600, width = 800)
+        self.workingframe = Frame(self.master, height = 600, width = 800, highlightthickness=2,highlightbackground='black')
         self.workingframe.grid(row = 1, column = 1)
         self.master.grid_rowconfigure(0,weight = 1)
         self.master.grid_rowconfigure(2,weight = 1)       
@@ -26,6 +25,7 @@ class main:
 
         self.font = ("Times News Romans", 15)
 
+        self.input()
     def input(self):
         _tenmechay = Label(
             self.workingframe,
@@ -47,7 +47,7 @@ class main:
             self.workingframe,
             text = 'Chọn file kết quả\nHPV Cobas',
             font = self.font,
-            command = self.importinfo('Cobas'))
+            command = lambda x = 'Cobas': self.importinfo(x))
         cobasfile.grid(
             row = 1,
             column = 0)
@@ -65,7 +65,7 @@ class main:
             self.workingframe,
             text = 'Chọn file excel thông tin bệnh nhân',
             font = self.font,
-            command = self.importinfo('Patient'))
+            command = lambda x = 'Patient': self.importinfo(x))
         bnfile.grid(
             row = 2,
             column = 0
@@ -81,6 +81,63 @@ class main:
             column =1
             )
         
+        self.timeframe = Frame(
+            self.workingframe,
+        )
+        self.timeframe.grid(
+            row = 3,
+            column = 1
+        )
+
+        self._ngaynhap = Label(
+            self.workingframe,
+            text = "Ngày tiếp nhận",
+            font = self.font,
+        )
+        self._ngaynhap.grid(
+            row = 3,
+            column = 0
+        )
+
+        self.ngaynhap_ngay = Label(
+            self.timeframe,
+            text = 'Ngày',
+            font = self.font
+        ).pack(side='left')
+
+        self.ngaynhap_entry_ngay = Entry(
+            self.timeframe,
+            width = 3,
+            font = self.font
+        )
+        self.ngaynhap_entry_ngay.pack(side='left')
+        
+        self.ngaynhap_thang = Label(
+            self.timeframe,
+            text = 'Tháng',
+            font = self.font
+        ).pack(side='left')
+
+        self.ngaynhap_entry_thang = Entry(
+            self.timeframe,
+            width = 3,
+            font = self.font
+        )
+        self.ngaynhap_entry_thang.pack(side='left')
+
+        self.ngaynhap_nam = Label(
+            self.timeframe,
+            text = 'Năm',
+            font = self.font
+        ).pack(side='left')
+
+        self.ngaynhap_entry_nam = Entry(
+            self.timeframe,
+            width = 3,
+            font = self.font
+        )
+        self.ngaynhap_entry_nam.pack(side='left')
+
         nhaplieu = Button(
             self.workingframe,
             text = "Nhập dữ liệu",
@@ -88,28 +145,37 @@ class main:
             command = self.export
             )
         nhaplieu.grid(
-            row = 3,
+            row = 4,
             column = 0,
             columnspan = 2
         )
     
-    def importexcel(self,_filetype):
-        match _filetype:
-            case 'Cobas':
-                _filelink = askopenfile(title = "Chọn", mode = 'r', filetypes=[('Cobas result files','*.xml')])
-                self.workingcase['Cobas'] = _filelink
-                self._cobasfile.config(text = "_filelink")
-            case 'Patient':
-                _filelink = askopenfile(title = "Chọn", mode = 'r', filetypes=[('Excel','*.xlsx')])
-                self.workingcase['Patient'] = _filelink            
-                self._bnfile.config(text = _filelink)
+    def importinfo(self,_filetype):
+        _filelink = ''
+        widget_type = {
+            'Cobas': self._cobasfile,
+            'Patient': self._bnfile
+            } 
+        _importfiletype = {
+            'Cobas': [('Cobas result files','*.xml')],
+            'Patient': [('Excel 2010 or later','*.xlsx')]
+        }
+        _filelink = askopenfilename(filetypes = _importfiletype[_filetype])
+        widget_type[_filetype].config(text = _filelink)
+        self.workingcase[_filetype] = _filelink
 
     def export(self):
         runningname = self.tenmechay.get()
+        receivedday_day = self.ngaynhap_entry_ngay.get()
+        receivedday_month = self.ngaynhap_entry_thang.get()
+        receivedday_year = self.ngaynhap_entry_nam.get()
         if runningname == "" or self.workingcase['Cobas'] == "" or self.workingcase['Patient'] == "" :
             showerror(title = 'KHÔNG ĐỦ DỮ LIỆU', message= "KHÔNG ĐỦ DỮ LIỆU\nVui lòng điền đủ tên mẻ chạy, chọn file Cobas và bệnh nhân")
         else:
             self.workingcase['Run'] = runningname
+            self.workingcase['Rec_day'] = receivedday_day
+            self.workingcase['Rec_month'] = receivedday_month
+            self.workingcase['Rec_year'] = receivedday_year
             shutil.move(self.workingcase['Cobas'], f'{self.serverlink}/input/')
             shutil.move(self.workingcase['Patient'], f'{self.serverlink}/input/')
             with open(f'{self.serverlink}/listwork/_{self._workingcase}','w') as _work:
@@ -118,13 +184,15 @@ class main:
             infomsg = f"Tác vụ {self._workingcase} đã đuọc khởi tạo\n-Chương trình: Cobas2PDF - Chuyển kết quả Cobas để ký số\n- Tên mẻ chạy: {self.workingcase['Run']}"
             showinfo(title=f'{self._workingcase} task', message = infomsg)
             slink = self.serverlink
-            progresspanel = Toplevel()
-            self.infor = Label(progresspanel,text = "Thông tin đang được xử lý",font = ("Times News Romans", 25))
+            self.progresspanel = Toplevel()
+            self.infor = Label(self.progresspanel,text = "Thông tin đang được xử lý",font = ("Times News Romans", 25))
             self.infor.pack()
-            progresspanel.after(5000,checkstatus)
-            wkc = self._workingcase
-            def checkstatus(wkc):
-                import time
-                if os.path.isfile(f'{slink}/output/_{wkc}.kq'):
-                    self.info.config(text = "Đã chuyển đổi xong\nVui lòng vào thư mục xuất để lấy kết quả")
-                    exitbutton = Button(progresspanel, text = "OK", command = progresspanel.destroy())
+            self.checkstatus()
+    
+    def checkstatus(self):
+#        while os.path.isfile(f'{self.serverlink}/output/_{self._workingcase}.kq') == False:
+        print('Begin scanning')
+        if os.path.isfile(f'{self.serverlink}/output/_{self._workingcase}.kq'):
+            self.progresspanel.destroy()
+            showinfo
+        self.progresspanel.after(5000,self.checkstatus)
