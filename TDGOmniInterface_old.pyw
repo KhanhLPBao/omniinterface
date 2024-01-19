@@ -22,8 +22,7 @@ class maingui(Tk.Tk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         self.geometry(f'{screen_width}x{screen_height}')
-        self.attributes('-fullscreen',True)       
-
+        self.attributes('-fullscreen',True)    
         _titleframe = Tk.Frame(self,
                                height=15,
                                highlightthickness=2,
