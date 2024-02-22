@@ -68,6 +68,67 @@ def block_analysis(commfile):
     inp = req[req_index['input']+1:req_index['/input']]
     out = str(req[req_index['output']+1:req_index['/output']])
     return [title,reg,inp,out]
+def block_construct(title,reg,inp,out):
+    block = [
+        '<title>',
+        title,
+        '</title>',
+        '<registry>',
+        reg,
+        '</registry>',
+        '<input>',
+        inp,
+        '</input>',
+        '<output>',
+        out,
+        '</output>',
+        '<END>'
+        ]
+    return block
+def sendrequest(serverdir,hostname,token,title,reg,inp,out = '',*args):
+    from os.path import isfile
+    nowait = False
+    for v_ in args:
+        if v_ == '--nowait':
+            nowait = True
+    filerequest = f'{hostname}_{token}.request'
+    fileresponse = f'{hostname}_{token}.response'
+    content = block_construct(title,reg,inp,out)
+    for i_,e_ in enumerate(content):
+        if e_ is None:
+            content[i_] = ''
+    print(content)
+
+    def requestcheck():
+        wait = 0
+        maxwait = 30
+        appeared = False
+        fileresponse_full = f'{serverdir}/interface_response/{fileresponse}'
+        while wait < maxwait:
+            if isfile(fileresponse_full):
+                with open(fileresponse_full) as res:
+                    rescontent = [r.rstrip() for r in res.readlines()]
+                if rescontent[-1] == '<END>':
+                    appeared = True
+                    break
+                wait += 1
+        if appeared:
+            return 0
+        else:
+            return 1
+        content = block_construct(title,reg,inp,out)     
+    try:    
+        with open(f'{serverdir}/interface_request/{filerequest}','w') as re:
+            re.write('\n'.join(content))
+    except Exception as ex:
+        print(ex)
+        return 2
+    if nowait:
+        print(content)
+        return 0
+    else:
+        checkrequest = requestcheck()
+    return checkrequest
 def debug(mod,exportstr,exporttype=None):
     from datetime import datetime
     from tkinter import filedialog
@@ -94,3 +155,15 @@ def debug(mod,exportstr,exporttype=None):
             showinfo(title = 'Debug message',message=strexport)
         case None:
             print(strexport)
+def exportlc(scriptpath,token,content,filetype):
+    with open(f'{scriptpath}/{filetype}/{token}','w') as o:
+        o.write(content)
+def importlc(scriptpath,token,filetype):
+    import os
+    filerequested = f'{scriptpath}/{filetype}/{token}'
+    if os.path.isfile(filerequested):
+        with open(filerequested) as _o:
+            o = _o.read()
+            return o
+    else:
+        return False

@@ -3,16 +3,16 @@ from tkinter.messagebox import showerror, showinfo
 import os
 import socket
 from Program.reg2server import reg2server
-from Program.omniengine import debug,block_analysis,encode,decode,matrix_assemble
+from Program.omniengine import debug,block_analysis,encode,decode,matrix_assemble, exportlc
 from time import sleep
 hostname = socket.gethostname()
 class login:
-    def __init__(self, section, matrix, logintoken,serverdir):
+    def __init__(self, section, matrix, logintoken,serverdir,scriptpath):
         self.master = section
         self.token = logintoken
         self.matrix = matrix
         self.serverdir = serverdir
-
+        self.scriptpath = scriptpath
         loginframe = Frame(self.master,
                             height=60,
                             width=120)
@@ -59,18 +59,27 @@ class login:
         if str(log) == "['0']": #Login complete
             showinfo(title = 'LOGIN COMPLETE',message = 'LOGIN COMPLETED! WELCOMETO TDG OMNI INTERFACE')
             self.master.destroy()
+            exportlc(self.scriptpath, self.token,'Login completed','log')
+            with open(f'{self.scriptpath}/cache/__session{self.token}','w') as cache:
+                cache.write(id)
+            with open(f'{self.scriptpath}/cache/{self.token}_logged','w') as logged:
+                logged.write('1')
+            return 0
         elif str(log) == '1':
             showerror(title = 'SOME SHARK INSIDE THE NETWORK!', message = 'ERROR! CANNOT CONNECTED TO SERVER')
             self.frameswitch('normal')
+            exportlc(self.scriptpath, self.token,'No responses from server','lol')
+            return 1
         else:
             showerror(title = 'SERVER SAYS NO!', message = f'SERVER RETURNED ERROR: {str(log)}')
             self.frameswitch('normal')
+            exportlc(self.scriptpath, self.token,'Encountered error: Login Mismatch','lol')
+            return 1
     def login_manager(self):
         fileresponse = f'{self.serverdir}\\interface_response\\{hostname}_{self.token}.response'
         count = 0
         countmax = 15
         found = 0
-        print('Begin the loop')
         while found == 0 and count <= countmax:
             count += 1
             if os.path.isfile(fileresponse):
@@ -87,7 +96,6 @@ class login:
                             os.remove(fileresponse)
                             return accepted
             sleep(1)
-        print('End the loop at',count,'second')
         if found == 0:
             return 1
     def frameswitch(self,status):
